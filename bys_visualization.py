@@ -2,12 +2,31 @@
 
 from __future__ import annotations
 
+import math
+
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 
 import bys_constants as C
 from bys_evaluation import Analysis, de, err_pct, num_text, sci, tau_text
+
+
+def _ref_line(fig, value, text, position, axis, log=True, **line_kwargs):
+    """Referenzlinie mit Beschriftung auf einer logarithmischen Achse: die Linie liegt auf dem Datenwert, die Beschriftung braucht log10 des Werts
+    (add_hline und add_vline setzen beide auf denselben Wert, die Beschriftung sitzt dann falsch und dehnt die Achse); log=False für lineare Achsen."""
+    if log and not value > 0.0:
+        return
+    pos = math.log10(value) if log else value
+    top, left = "top" in position, "left" in position
+    if axis == "y":
+        fig.add_hline(y=value, **line_kwargs)
+        if text:
+            fig.add_annotation(xref="paper", yref="y", x=0 if left else 1, y=pos, text=text, showarrow=False, xanchor="left" if left else "right", yanchor="bottom" if top else "top")
+    else:
+        fig.add_vline(x=value, **line_kwargs)
+        if text:
+            fig.add_annotation(xref="x", yref="paper", x=pos, y=1 if top else 0, text=text, showarrow=False, xanchor="right" if left else "left", yanchor="top" if top else "bottom")
 
 
 def _fixed(fig: go.Figure, height: int = 380, **layout) -> go.Figure:
@@ -74,8 +93,8 @@ def build_evidence_chart(a: Analysis) -> go.Figure:
     fig = go.Figure()
     ev = a.evid_values - float(np.max(a.evid_values))
     fig.add_trace(go.Scatter(x=a.evid_taus, y=np.maximum(ev, -60.0), mode="lines", name="log p(b | τ) − Maximum", line=dict(color=C.COLOR_EVID, width=3)))
-    fig.add_vline(x=a.settings.tau, line=dict(color=C.COLOR_MAP, width=2), annotation_text=f"gewählt: τ = {tau_text(a.settings.tau)}", annotation_position="top left")
-    fig.add_vline(x=a.tau_hat, line=dict(color=C.COLOR_GREY, width=2, dash="dash"), annotation_text=f"Evidenz-Maximum: τ̂ = {tau_text(a.tau_hat)}", annotation_position="top right")
+    _ref_line(fig, a.settings.tau, f"gewählt: τ = {tau_text(a.settings.tau)}", "top left", "x", line=dict(color=C.COLOR_MAP, width=2))
+    _ref_line(fig, a.tau_hat, f"Evidenz-Maximum: τ̂ = {tau_text(a.tau_hat)}", "top right", "x", line=dict(color=C.COLOR_GREY, width=2, dash="dash"))
     fig.update_xaxes(title="Prior-Standardabweichung τ", type="log", tickformat=".0e")
     fig.update_yaxes(title="Log-Evidenz relativ zum Maximum (unter −60 abgeschnitten)", range=[-62, 2])
     return _fixed(fig, 360)
@@ -100,7 +119,7 @@ def build_mmse_chart(res: dict) -> go.Figure:
     fig = go.Figure()
     colors = [C.COLOR_MAP] + [C.COLOR_TIK] * (len(rows) - 1)
     fig.add_trace(go.Bar(x=[r["label"] for r in rows], y=[r["mse"] for r in rows], marker_color=colors, text=[num_text(r["mse"]) for r in rows], textposition="outside"))
-    fig.add_hline(y=res["trace"], line=dict(color=C.COLOR_GREY, dash="dash"), annotation_text="spur Γ (Bayes-Risiko)", annotation_position="top right")
+    _ref_line(fig, res["trace"], "spur Γ (Bayes-Risiko)", "top right", "y", line=dict(color=C.COLOR_GREY, dash="dash"))
     fig.update_yaxes(title="Mittlerer quadratischer Fehler ‖m − x‖² (logarithmisch)", type="log")
     fig.update_xaxes(tickangle=-30)
     return _fixed(fig, 380, showlegend=False)
