@@ -1,5 +1,7 @@
 # Bayes-Sicht: Was das MAP verschweigt – Streamlit-Demo
 
+**[→ Demo live ausprobieren](https://sebastianhanisch-bayes-map-demo.streamlit.app/)**
+
 Siebtes Stück der Linie **Inverse Probleme und Regularisierung** in der „Konzepte“-Reihe im Portfolio von [Sebastian Hanisch](https://sebastianhanisch.net) (Operations Research und Machine Learning). Es baut auf [schlecht-gestellt-demo](https://github.com/sebastian-hanisch/schlecht-gestellt-demo), [tikhonov-demo](https://github.com/sebastian-hanisch/tikhonov-demo), [parameterwahl-demo](https://github.com/sebastian-hanisch/parameterwahl-demo) und [sparsity-tv-demo](https://github.com/sebastian-hanisch/sparsity-tv-demo) auf und nutzt dieselbe Welt: ein Phantom aus zwei Hügeln und einem Kasten, gemessen mit einer Gauß-Unschärfe und weißem Rauschen. Die Wahrheit ist bekannt, weil das Phantom selbst die Wahrheit ist; sie dient hier nur als Maßstab.
 
 ## Kernfrage
